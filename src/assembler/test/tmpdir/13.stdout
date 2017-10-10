@@ -1,0 +1,139 @@
+                  1: /
+                  2: /  A program to print all the prime numbers
+                  3: /
+  0x000: 0x000    4: n,		0		/ the number we are working on
+  0x001: 0x00A    5: ascii_nl, 10
+  0x002: 0x7D0    6: limit,  2000
+                  7: 
+  0x003: 0xE81    8: start,	cla iac	/ 1
+  0x004: 0x600    9: 		dca n	/ n = 1 (initially)
+                 10: 
+  0x005: 0xE80   11: label1, cla
+  0x006: 0x200   12: 		tad n
+  0x007: 0x800   13: 		jms prime		/ check if n is prime, skip if so
+  0x008: 0xA00   14: 		jmp	label2
+  0x009: 0xE80   15: 		cla
+  0x00A: 0x200   16: 		tad n           / n is prime
+  0x00B: 0x800   17: 		jms printn		/ print n
+  0x00C: 0xE80   18: 		cla
+  0x00D: 0x201   19: 		tad ascii_nl
+  0x00E: 0xC20   20: 		iot 4 0
+  0x00F: 0x400   21: label2, isz n
+  0x010: 0xE80   22: 		cla 
+  0x011: 0x200   23: 		tad n
+  0x012: 0xE21   24: 		cma iac         / -n
+  0x013: 0x202   25: 		tad limit       / limit - n
+  0x014: 0xF40   26: 		sma             / if limit < n, halt
+  0x015: 0xA05   27: 		jmp label1      / loop until all numbers handled
+  0x016: 0xF02   28: 		hlt				/ then stop
+                 29: 
+                 30: /  printn contents of A register (as a decimal number) on device 4
+                 31: 
+  0x017: 0x000   32: parray, 0
+  0x018: 0x000   33: 		0
+  0x019: 0x000   34: 		0
+  0x01A: 0x000   35: 		0
+  0x01B: 0x000   36: 		0        / array of 5 digits.
+  0x01C: 0x017   37: arradd, parray   / address of print digit array
+  0x01D: 0x017   38: arrptr, parray   / pointer into array for next digit
+  0x01E: 0x000   39: tempn,  0        / space to save working value of n
+  0x01F: 0x030   40: ascii_zero,  '0'
+  0x020: 0x00A   41: ten,    10
+                 42: 
+  0x021: 0x000   43: printn,  0
+  0x022: 0x61E   44: 		dca tempn		/ save n
+  0x023: 0x220   45: 		tad ten
+  0x024: 0x600   46: 		dca X           / to divide by 10
+  0x025: 0x21E   47: 		tad tempn		/ reload n
+  0x026: 0x800   48: plo,	jms div 		/ divide A by 10; quotient in A; remainder in R
+  0x027: 0x61E   49: 		dca tempn       / n = n / 10
+  0x028: 0x200   50:         tad r			/ load remainder
+  0x029: 0x71D   51: 		dca i arrptr	/ save digit
+  0x02A: 0x41D   52: 		isz arrptr
+  0x02B: 0x21E   53: 		tad tempn
+  0x02C: 0xF20   54: 		sza				/ are we done? is tempn = 0
+  0x02D: 0xA26   55: 		jmp plo
+                 56: 		/ we have broken n into its digits; now print them
+                 57: 		/ load pointer and decrement it
+  0x02E: 0xEA0   58: ploo,	cla cma			/ -1 -> A
+  0x02F: 0x21D   59: 		tad arrptr
+  0x030: 0x61D   60: 		dca arrptr
+  0x031: 0x31D   61: 		tad i arrptr    / get the digit
+  0x032: 0x21F   62: 		tad ascii_zero  / change to ascii
+  0x033: 0xC20   63: 		iot 4 0			/ output to stdout
+  0x034: 0xE80   64: 		cla
+  0x035: 0x21D   65: 		tad arrptr
+  0x036: 0xE21   66: 		cma iac			/ -arrptr
+  0x037: 0x21C   67: 		tad arradd		/ compare with base address
+  0x038: 0xF20   68: 		sza
+  0x039: 0xA2E   69: 		jmp ploo
+  0x03A: 0xB21   70: 		jmp i printn     / we done.
+                 71: 
+                 72: / divide
+                 73: / divide A register by the value in X
+                 74: 
+  0x03B: 0x000   75: q,      0    / quotient
+  0x03C: 0x000   76: r,      0    / remainder
+                 77: 
+  0x03D: 0x000   78: X,      0
+  0x03E: 0x000   79: div,    0
+  0x03F: 0x63C   80: 		dca  r
+  0x040: 0x63B   81: 		dca  q    / set q = 0
+  0x041: 0x23D   82: 		tad  X
+  0x042: 0xFA8   83: 		sza rss cla / make sure X is not zero
+  0x043: 0xB3E   84: 		jmp I div   / divide by zero, return zero
+                 85: 
+  0x044: 0x23D   86: dloop,  tad  X    /  divide by X
+  0x045: 0xE21   87: 		cma iac   / -X
+  0x046: 0x23C   88: 		tad  r    /  r - X
+  0x047: 0xF48   89: 		spa       / if r > X skip
+  0x048: 0xA00   90: 		jmp  dfini
+  0x049: 0x43B   91: 		isz  q    / q = q + 1 (for the X we just subtracted)
+  0x04A: 0x63C   92: 		dca  r    / r = r - X
+  0x04B: 0xA44   93:         jmp  dloop
+  0x04C: 0xE80   94: dfini,  cla
+  0x04D: 0x23B   95: 		tad q			/ put quotient in a
+  0x04E: 0xB3E   96: 		jmp i div     / return 
+                 97: 
+                 98: 
+                 99: 
+                100: 
+                101: / determine if the value in the A register is prime or not
+                102: / if prime, return to RA+1; else return to RA.
+                103: 
+  0x04F: 0x000  104: prime,  0
+                105: 
+                106: / to determine if the number is prime, divide by every number from 2 .. RA-1
+  0x050: 0x600  107:    	    DCA  pcan       / save the candidate value
+  0x051: 0xE05  108: 		IAC RAL         / start with 2
+  0x052: 0x600  109: 		DCA pnext
+                110: 
+  0x053: 0xE80  111: ploop,	CLA
+  0x054: 0x200  112: 		TAD pnext
+  0x055: 0xE21  113: 		CMA IAC         / -pnext
+  0x056: 0x200  114: 		TAD pcan        / compare pnext and pcan
+  0x057: 0xF28  115: 		SZA RSS
+  0x058: 0xA00  116: 		JMP pis         / pnext = pcan, is prime
+  0x059: 0xF48  117: 		SMA RSS         / pcan - pnext > 0
+  0x05A: 0xA00  118: 		JMP pis         / is prime; pcan <= pnext
+                119: 
+  0x05B: 0xE80  120:     	CLA
+  0x05C: 0x200  121: 		TAD pnext
+  0x05D: 0x63D  122: 		DCA X
+  0x05E: 0x200  123: 		TAD pcan
+  0x05F: 0x83E  124: 		JMS DIV         / See if PCAN / PNEXT is zero.
+  0x060: 0xE80  125: 		CLA
+  0x061: 0x23C  126: 		TAD R          / Look at the remainder
+  0x062: 0xF28  127: 		SZA RSS
+  0x063: 0xB4F  128: 		JMP I prime   / if remainder is zero, not prime
+                129: 		
+  0x064: 0x400  130: 		ISZ pnext
+  0x065: 0xA53  131: 		JMP ploop
+                132: 
+  0x066: 0x44F  133: pis,    isz prime       / if number is prime, increment RA
+  0x067: 0xB4F  134: 		jmp i prime      
+                135: 
+  0x068: 0x000  136: pcan,   0
+  0x069: 0x000  137: pnext,  0
+                138: 
+                139: 		end start

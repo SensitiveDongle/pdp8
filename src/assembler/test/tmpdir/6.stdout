@@ -1,0 +1,8 @@
+                  1: ORIG 1000
+  0x3E8: 0xF02    2: 		HLT
+                  3: ORIG 2000
+  0x7D0: 0xF02    4: 		HLT
+                  5: ORIG 3000
+  0xBB8: 0xF02    6: 		HLT
+                  7: ORIG 4000
+  0xFA0: 0xF02    8: 		HLT

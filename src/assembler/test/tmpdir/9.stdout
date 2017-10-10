@@ -1,0 +1,5 @@
+                  1: / Professor Peterson said we can handle this any way we want.
+                  2: 		ORIG 64
+  0x040: 0x000    3: start,	0
+  0x041: 0xE80    4: 		CLA
+  0x042: 0xF02    5: 		HLT

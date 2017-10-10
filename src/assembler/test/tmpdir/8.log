@@ -1,0 +1,2 @@
+symbol var redefined; old value = 0x000, new value = 0x001
+*** 1 errors in assembly

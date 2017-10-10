@@ -1,0 +1,5 @@
+  0x000: 0x001    1: var, 1
+  0x001: 0x002    2: var, 2
+  0x002: 0x000    3: program, 0
+  0x003: 0xF02    4: 	HLT
+                  5: END program

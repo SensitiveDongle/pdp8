@@ -7,12 +7,19 @@
 
 #include "decode.h"
 
+/*
+ *
+ */
 pdp8_INSTRUCTION * pdp8_decode(WORD word){
 	pdp8_INSTRUCTION * instruction = instruction_table+get_opcode(word);
 	instruction->addr = get_effective_address(word);
 	return instruction;
 }
 
+
+/*
+ *
+ */
 EFFECTIVE_ADDRESS get_effective_address(WORD word){
 
 	// if it's an operate  or i/o instruction we can just return
@@ -36,6 +43,11 @@ EFFECTIVE_ADDRESS get_effective_address(WORD word){
 		return addr;
 }
 
+
+/*
+ *  Get an opcode from the instruction.
+ *  Opcodes are the first 
+ */
 byte get_opcode(WORD word){
 	return (word & 0xFFF) >> 9;
 }

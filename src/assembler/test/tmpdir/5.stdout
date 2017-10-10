@@ -1,0 +1,304 @@
+                  1: /
+                  2: /  A program to add a list of numbers
+                  3: /
+                  4: 
+                  5: /    some pointers
+  0x000: 0x000    6: separator1, str1
+  0x001: 0x000    7: separator2, str2
+  0x002: 0x000    8: separator3, str3
+  0x003: 0x000    9: prompt,  prompts
+                 10: 
+                 11: 
+                 12: ///////////////////////////////////		
+                 13: / divide
+                 14: / divide A register by the value in X
+                 15: 
+  0x004: 0x000   16: q,      0    / quotient
+  0x005: 0x000   17: r,      0    / remainder
+                 18: 
+  0x006: 0x000   19: X,      0
+  0x007: 0x000   20: div,    0
+  0x008: 0x605   21: 		dca  r
+  0x009: 0x604   22: 		dca  q    / set q = 0
+  0x00A: 0x206   23: 		tad  X
+  0x00B: 0xFA8   24: 		sza rss cla / make sure X is not zero
+  0x00C: 0xB07   25: 		jmp I div   / divide by zero, return zero
+                 26: 
+  0x00D: 0x206   27: dloop,  tad  X    /  divide by X
+  0x00E: 0xE21   28: 		cma iac   / -X
+  0x00F: 0x205   29: 		tad  r    /  r - X
+  0x010: 0xF48   30: 		spa       / if r > X skip
+  0x011: 0xA00   31: 		jmp  dfini
+  0x012: 0x404   32: 		isz  q    / q = q + 1 (for the X we just subtracted)
+  0x013: 0x605   33: 		dca  r    / r = r - X
+  0x014: 0xA0D   34:         jmp  dloop
+  0x015: 0xE80   35: dfini,  cla
+  0x016: 0x204   36: 		tad q			/ put quotient in a
+  0x017: 0xB07   37: 		jmp i div     / return 
+                 38: 
+                 39: 
+                 40: ///////////////////////////////////		
+                 41: /  print a string.  One character per word.
+                 42: /	Address of string is in A register
+                 43: /  string is zero terminated.
+                 44: 
+  0x018: 0x000   45: P0,     0
+  0x019: 0x000   46: prints,  0
+  0x01A: 0x618   47: 		DCA  P0
+  0x01B: 0x318   48: P1,		TAD I P0
+  0x01C: 0xF28   49: 		SZA RSS
+  0x01D: 0xB19   50: 		JMP I prints
+  0x01E: 0xC20   51: 		IOT 4,0
+  0x01F: 0x418   52: 		ISZ P0
+  0x020: 0xE80   53: 		CLA
+  0x021: 0xA1B   54: 		JMP P1
+                 55: 
+                 56: 
+                 57: ///////////////////////////////////		
+                 58: /  print a number, in decimal.
+                 59: /  number is in the A register.
+                 60: /  Use divide to get remainder by dividing by 10 to get the digits.
+                 61: /  remainder digits come out low-order first, so save them, and
+                 62: /  print them in the reverse order.
+                 63: 
+                 64: 
+  0x022: 0x000   65: parray, 0
+  0x023: 0x000   66: 		0
+  0x024: 0x000   67: 		0
+  0x025: 0x000   68: 		0
+  0x026: 0x000   69: 		0        / array of 5 digits.
+  0x027: 0x022   70: arradd, parray   / address of print digit array
+  0x028: 0x022   71: arrptr, parray   / pointer into array for next digit
+  0x029: 0x000   72: tempn,  0        / space to save working value of n
+  0x02A: 0x030   73: ascii_zero,  '0'
+  0x02B: 0x00A   74: ten,    10
+                 75: 
+  0x02C: 0x000   76: printn,  0
+  0x02D: 0x629   77: 		dca tempn		/ save n
+  0x02E: 0x22B   78: 		tad ten
+  0x02F: 0x606   79: 		dca X           / to divide by 10
+  0x030: 0x229   80: 		tad tempn		/ reload n
+  0x031: 0x807   81: plo,	jms div 		/ divide A by 10; quotient in A; remainder in R
+  0x032: 0x629   82: 		dca tempn       / n = n / 10
+  0x033: 0x205   83:         tad r			/ load remainder
+  0x034: 0x728   84: 		dca i arrptr	/ save digit
+  0x035: 0x428   85: 		isz arrptr
+  0x036: 0x229   86: 		tad tempn
+  0x037: 0xF20   87: 		sza				/ are we done? is tempn = 0
+  0x038: 0xA31   88: 		jmp plo
+                 89: 		/ we have broken n into its digits; now print them
+                 90: 		/ load pointer and decrement it
+  0x039: 0xEA0   91: ploo,	cla cma			/ -1 -> A
+  0x03A: 0x228   92: 		tad arrptr
+  0x03B: 0x628   93: 		dca arrptr
+  0x03C: 0x328   94: 		tad i arrptr    / get the digit
+  0x03D: 0x22A   95: 		tad ascii_zero  / change to ascii
+  0x03E: 0xC20   96: 		iot 4 0			/ output to stdout
+  0x03F: 0xE80   97: 		cla
+  0x040: 0x228   98: 		tad arrptr
+  0x041: 0xE21   99: 		cma iac			/ -arrptr
+  0x042: 0x227  100: 		tad arradd		/ compare with base address
+  0x043: 0xF20  101: 		sza
+  0x044: 0xA39  102: 		jmp ploo
+  0x045: 0xB2C  103: 		jmp i printn     / we done.
+                104: 
+                105: ///////////////////////////////////		
+                106: /   read a number from input and return the value
+                107: 
+  0x046: 0x000  108: readc, 0    / the read character
+  0x047: 0x000  109: value, 0    / the accumulated value
+  0x048: 0x000  110: rb4,   0    / zero is before any useful input, non-zero after
+  0x049: 0xFF6  111: m10,   -10  / minus 10
+  0x04A: 0xFD0  112: m48,   -48  / minus 48 ('0')
+                113: 
+  0x04B: 0x000  114: readn,  0
+  0x04C: 0xE80  115: 		cla
+  0x04D: 0x647  116: 		dca  value       / set value to zero
+  0x04E: 0x648  117: 		dca  rb4
+  0x04F: 0xC18  118: rloop,	IOT  3,0         / read a character
+  0x050: 0xF48  119: 		sma rss			 / check for EOF
+  0x051: 0xA00  120: 		jmp reof
+  0x052: 0x24A  121: 		tad m48			/ add -'0'
+  0x053: 0xF48  122: 		sma rss
+  0x054: 0xA00  123: 		jmp rbad        / bad character
+  0x055: 0x646  124: 		dca readc		/ save the read value
+  0x056: 0x246  125: 		tad readc
+  0x057: 0x249  126: 		tad m10			/ add -10
+  0x058: 0xF40  127: 		sma
+  0x059: 0xA00  128: 		jmp rbad
+                129: 		/ we have a digit.
+  0x05A: 0x448  130: 		isz rb4	   	    / no longer in the before part
+  0x05B: 0xEC0  131: 		cla cll
+  0x05C: 0x247  132: 		tad value
+  0x05D: 0xE06  133: 		rtl				/ value * 4
+  0x05E: 0x247  134: 		tad value		/ value * 4 + value
+  0x05F: 0xE04  135: 		ral				/ (value * 4 + value) * 2 = value * 10
+  0x060: 0x246  136: 		tad readc
+  0x061: 0x647  137: 		dca	value
+  0x062: 0xA4F  138: 		jmp rloop
+                139: /   if we have a bad character (not '0' ... '9') skip it before, or return if after
+  0x063: 0xE80  140: rbad,	cla
+  0x064: 0x248  141: 		tad rb4
+  0x065: 0xF28  142: 		sza rss
+  0x066: 0xA4F  143: 		jmp rloop      / rb4 = 0; no number yet, skip leading non-numerics
+  0x067: 0xE80  144: 		cla
+  0x068: 0x247  145: 		tad value      / load value; skip the eof instruction on return
+  0x069: 0x44B  146: 		isz readn
+  0x06A: 0xB4B  147: 		jmp i readn
+                148: 
+                149: / on eof, if we have a value, return it; if not just return
+  0x06B: 0xE80  150: reof,   cla
+  0x06C: 0x248  151: 		tad rb4
+  0x06D: 0xF28  152: 		sza rss
+  0x06E: 0xB4B  153: 		jmp i readn    / EOF return
+  0x06F: 0xA63  154: 		jmp rbad       / otherwise treat as terminator
+                155: 
+                156: 
+                157: 
+                158: ///////////////////////////////////		
+                159: /   Main program.
+                160: /
+                161: /   1. write a prompt.
+                162: /   2. read numbers until EOF (0xFFF)
+                163: /   3. add all numbers together
+                164: /   4. print numbers and sum
+                165: /
+                166: 		orig 0x80
+  0x080: 0x000  167: sum,    0
+  0x081: 0x000  168: loopctr, 0
+  0x082: 0x000  169: nptr,    0
+  0x083: 0x000  170: ninputs, 0
+  0x084: 0x000  171: naddr,  addr_of_numbers
+                172: 
+  0x085: 0xE80  173: main,   cla
+  0x086: 0x203  174: 		tad		prompt
+  0x087: 0x819  175: 		jms 	prints             / print the prompt
+  0x088: 0xE80  176: 		cla
+  0x089: 0x683  177: 		dca		ninputs
+  0x08A: 0x284  178: 		tad		naddr
+  0x08B: 0x682  179: 		dca		nptr
+  0x08C: 0x84B  180: iloop,	JMS		readn              / read a number
+  0x08D: 0xA00  181: 		jmp		endinput           / if EOF
+  0x08E: 0x782  182: 		dca	I	nptr               / save the number
+  0x08F: 0x482  183: 		isz		nptr
+  0x090: 0x483  184: 		isz		ninputs            / increase count of numbers
+  0x091: 0xA8C  185: 		jmp		iloop
+                186: 
+  0x092: 0xE80  187: endinput, cla                      / EOF on input, now add numbers
+  0x093: 0x283  188: 	    tad		ninputs
+  0x094: 0xE21  189: 		cma iac
+  0x095: 0x681  190: 		dca		loopctr            / define -n as loop count
+  0x096: 0x284  191: 		tad		naddr
+  0x097: 0x682  192: 		dca		nptr
+  0x098: 0x680  193: 		dca		sum                / sum = 0
+  0x099: 0xEC0  194: oloop,	cla cll
+  0x09A: 0x382  195: 		tad I   nptr               / print number
+  0x09B: 0x82C  196: 		jms	    printn
+  0x09C: 0xEC0  197: 		cla cll                    / sum =
+  0x09D: 0x280  198: 		tad		sum				   /        sum +
+  0x09E: 0x382  199: 		tad I   nptr               /              next number
+  0x09F: 0x482  200: 		isz     nptr
+  0x0A0: 0xF18  201: 		szl		/ check for overflow
+  0x0A1: 0xA00  202: 		jmp     overflow
+                203: 		/ check if negative
+  0x0A2: 0xF48  204: 		sma rss
+  0x0A3: 0xA00  205: 		jmp     overflow
+                206: 
+  0x0A4: 0x680  207: 		dca     sum
+  0x0A5: 0x481  208: 		isz		loopctr
+  0x0A6: 0xA00  209: 		jmp     oloop1
+  0x0A7: 0xA00  210: 		jmp     oloop2
+  0x0A8: 0xE80  211: oloop1,	cla
+  0x0A9: 0x200  212: 		tad     separator1         /  + 
+  0x0AA: 0x819  213: 		jms		prints
+  0x0AB: 0xA99  214: 		jmp		oloop
+                215: 
+                216: /    print sum
+  0x0AC: 0xE80  217: oloop2, cla
+  0x0AD: 0x201  218: 		tad	    separator2         / = 		
+  0x0AE: 0x819  219: 		jms		prints
+  0x0AF: 0xE80  220: 		cla
+  0x0B0: 0x280  221: 		tad     sum
+  0x0B1: 0x82C  222: 		jms     printn
+  0x0B2: 0xE80  223: oloop3, cla
+  0x0B3: 0x202  224: 	    tad	    separator3         / newline 		
+  0x0B4: 0x819  225: 		jms		prints
+  0x0B5: 0xF02  226: 		hlt
+                227: 
+  0x0B6: 0xE80  228: overflow,  cla
+  0x0B7: 0x201  229: 		tad     separator2
+  0x0B8: 0x819  230: 		jms     prints
+  0x0B9: 0xE80  231: 		cla
+  0x0BA: 0x200  232: 		tad     overmsg
+  0x0BB: 0x819  233: 		jms		prints
+  0x0BC: 0xAB2  234: 		jmp		oloop3
+                235: 
+  0x0BD: 0x000  236: overmsg, overs
+  0x0BE: 0x02A  237: overs,	'*'
+  0x0BF: 0x02A  238: 	'*'
+  0x0C0: 0x02A  239: 	'*'
+  0x0C1: 0x020  240: 	' '
+  0x0C2: 0x04F  241: 	'O'
+  0x0C3: 0x076  242: 	'v'
+  0x0C4: 0x065  243: 	'e'
+  0x0C5: 0x072  244: 	'r'
+  0x0C6: 0x066  245: 	'f'
+  0x0C7: 0x06C  246: 	'l'
+  0x0C8: 0x06F  247: 	'o'
+  0x0C9: 0x077  248: 	'w'
+  0x0CA: 0x020  249: 	' '
+  0x0CB: 0x02A  250: 	'*'
+  0x0CC: 0x02A  251: 	'*'
+  0x0CD: 0x02A  252: 	'*'
+  0x0CE: 0x000  253: 	0
+                254: 
+                255: 
+                256: ///////////////////////////////////		
+  0x0CF: 0x050  257: prompts, 'P'
+  0x0D0: 0x06C  258: 	'l'
+  0x0D1: 0x065  259: 	'e'
+  0x0D2: 0x061  260: 	'a'
+  0x0D3: 0x073  261: 	's'
+  0x0D4: 0x065  262: 	'e'
+  0x0D5: 0x020  263: 	' '
+  0x0D6: 0x074  264: 	't'
+  0x0D7: 0x079  265: 	'y'
+  0x0D8: 0x070  266: 	'p'
+  0x0D9: 0x065  267: 	'e'
+  0x0DA: 0x020  268: 	' '
+  0x0DB: 0x06E  269: 	'n'
+  0x0DC: 0x075  270: 	'u'
+  0x0DD: 0x06D  271: 	'm'
+  0x0DE: 0x062  272: 	'b'
+  0x0DF: 0x065  273: 	'e'
+  0x0E0: 0x072  274: 	'r'
+  0x0E1: 0x073  275: 	's'
+  0x0E2: 0x020  276: 	' '
+  0x0E3: 0x074  277: 	't'
+  0x0E4: 0x06F  278: 	'o'
+  0x0E5: 0x020  279: 	' '
+  0x0E6: 0x061  280: 	'a'
+  0x0E7: 0x064  281: 	'd'
+  0x0E8: 0x064  282: 	'd'
+  0x0E9: 0x03A  283: 	':'
+  0x0EA: 0x020  284: 	' '
+  0x0EB: 0x000  285: 	0
+                286: 
+  0x0EC: 0x020  287: str1,	' '
+  0x0ED: 0x02B  288: 	'+'
+  0x0EE: 0x020  289: 	' '
+  0x0EF: 0x000  290: 	0
+                291: 
+                292: 
+  0x0F0: 0x020  293: str2,	' '
+  0x0F1: 0x03D  294: 	'='
+  0x0F2: 0x020  295: 	' '
+  0x0F3: 0x000  296: 	0
+                297: 
+  0x0F4: 0x00A  298: str3,	10
+  0x0F5: 0x000  299: 	0
+                300: 
+                301: /   numbers continue as long as memory allows
+                302: addr_of_numbers,
+                303: 
+                304: 		end main

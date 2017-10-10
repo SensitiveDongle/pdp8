@@ -1,0 +1,23 @@
+(this is a conensed version of <name>)
+
+THE PDP-8:
+
+  Way, way back in 1965 a small computer named the PDP-8 came to be. The
+  computer was used mainly for dedicated data collection or control functions
+  (running steel mills, monitoring air pollution, etc.). PDP-8s sold for about
+  $5,000.
+
+HARDWARE:
+
+  The PDP-8 was a 12-bit binary machine, using two's complement arithmetic, and
+  the following pieces of hardware:
+    -> 4096 (4K) 12-bit words of main memory
+    -> 12-bit program counter
+    -> 12-bit A register (accumulator)
+    -> 12-bit memory address register
+    -> 12-bit memory data register
+    -> 1-bit link status flag
+
+ISA:
+
+PROGRAMMING, I/O, MISC:

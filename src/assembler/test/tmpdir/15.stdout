@@ -1,0 +1,33 @@
+                  1: 		ORIG 100
+  0x064: 0x000    2: TEMP,	0
+  0x065: 0x000    3: LOOPN,	0
+                  4: 
+  0x066: 0xF02    5: FOUND,	HLT
+                  6: 
+                  7: START,
+  0x067: 0xEF9    8: 		CLA CLL CMA CML RAR IAC
+  0x068: 0xEF7    9: 		CLA CLL CMA CML RTL IAC
+  0x069: 0xFF8   10: 		CLA SMA SZA SNL RSS
+  0x06A: 0xE00   11: 		NOP
+                 12: 		
+                 13: 
+  0x06B: 0x664   14: 		DCA	TEMP	/ SAVE A
+  0x06C: 0x200   15:  		TAD	N	
+  0x06D: 0xE21   16:  		CMA IAC		/ -N FOR ISZ
+  0x06E: 0x665   17:  		DCA	LOOPN	
+                 18: /	
+  0x06F: 0x200   19: LOOP,	TAD	X	
+  0x070: 0xE21   20:  		CMA IAC		/ -X
+  0x071: 0x264   21:  		TAD	TEMP	/ A-X
+  0x072: 0xFA8   22:  		SNA CLA		/ SKIP IF NOT EQUAL, CLEAR A
+  0x073: 0xA66   23:  		JMP	FOUND	/ FOUND IT
+  0x074: 0x46F   24:  		ISZ	LOOP	/ MODIFY ADDRESS OF X
+  0x075: 0x465   25:  		ISZ	LOOPN	/ TEST END OF LOOP
+  0x076: 0xA6F   26:  		JMP	LOOP	
+  0x077: 0xE00   27:  		NOP	        / NOT FOUND IN LIST
+  0x078: 0xC23   28: 		IOT 4,3
+  0x079: 0xF02   29: 		HLT
+                 30: 		
+  0x07A: 0x011   31: N,		17
+  0x07B: 0x07A   32: X,		N
+                 33: 		END START

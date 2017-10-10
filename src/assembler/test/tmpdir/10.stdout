@@ -1,0 +1,4 @@
+  0x000: 0xE80    1: 	CLA
+  0x001: 0xE0A    2: 	RTR
+  0x002: 0xF02    3: 	HLT
+                  4: END program

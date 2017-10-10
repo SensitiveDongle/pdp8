@@ -1,0 +1,6 @@
+  0x000: 0x000    1: program, 0
+  0x001: 0xA00    2: 		JMP subroutine
+  0x002: 0x200    3: 		TAD some_var
+  0x003: 0xF02    4: 		HLT
+                  5: 
+                  6: END program

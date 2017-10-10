@@ -1,0 +1,5 @@
+                  1: 		ORIG 4095
+  0xFFF: 0xFFF    2: max, 0xFFF
+                  3: 
+                  4: 		ORIG 0
+  0x000: 0xF02    5: 		HLT
